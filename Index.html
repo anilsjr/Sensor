@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Tower Redirector</title>
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: '#2563eb', // Blue 600
+                        brandHover: '#1d4ed8', // Blue 700
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #fafafa;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-gray-800 font-sans">
+
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 p-6 sm:p-8">
+        
+        <!-- Header -->
+        <div class="mb-6 text-center">
+            <h1 class="text-2xl font-bold text-gray-900 mb-1">Sensor Tower</h1>
+            <p class="text-gray-500 text-sm">Instantly redirect to app analytics.</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="mb-2 relative">
+            <input 
+                type="text" 
+                id="appInput" 
+                placeholder="Paste App Link or ID here..." 
+                class="w-full pl-4 pr-10 py-3.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all text-gray-800 bg-gray-50 focus:bg-white text-sm"
+                autocomplete="off"
+                autofocus
+            >
+            <button id="clearBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden transition-colors" title="Clear input">
+                <i class="fa-solid fa-circle-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Clipboard Button Option -->
+        <button id="clipboardBtn" class="mb-6 text-sm font-medium text-brand hover:text-brandHover flex items-center gap-1.5 transition-colors px-1">
+            <i class="fa-regular fa-clipboard"></i>
+            <span id="clipboardBtnText">Paste from clipboard</span>
+        </button>
+
+        <!-- Validation Error Message -->
+        <div id="errorMessage" class="hidden mb-6 bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm flex items-start gap-2 border border-red-100 fade-in">
+            <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+            <span>Invalid Android Package ID or iOS App ID.</span>
+        </div>
+
+        <!-- Result Area -->
+        <div id="resultArea" class="hidden fade-in">
+            <div class="bg-gray-50 rounded-xl p-3.5 mb-4 border border-gray-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-100">
+                        <i id="platformIcon" class="text-gray-700"></i>
+                    </div>
+                    <div>
+                        <p id="platformText" class="text-sm font-semibold text-gray-800"></p>
+                        <p id="extractedIdText" class="text-xs font-mono text-gray-500 mt-0.5 break-all"></p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="redirectBtn" class="w-full bg-brand hover:bg-brandHover text-white font-semibold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                <span>Open in Sensor Tower</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-6 pt-4 border-t border-gray-100 flex justify-center">
+            <label class="flex items-center gap-2 text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">
+                <input type="checkbox" id="autoRedirect" class="rounded border-gray-300 text-brand focus:ring-brand w-3.5 h-3.5" checked>
+                <span>Auto-redirect on paste</span>
+            </label>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const appInput = document.getElementById('appInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultArea = document.getElementById('resultArea');
+        const errorMessage = document.getElementById('errorMessage');
+        const redirectBtn = document.getElementById('redirectBtn');
+        
+        const platformIcon = document.getElementById('platformIcon');
+        const platformText = document.getElementById('platformText');
+        const extractedIdText = document.getElementById('extractedIdText');
+        const autoRedirect = document.getElementById('autoRedirect');
+        
+        const clipboardBtn = document.getElementById('clipboardBtn');
+        const clipboardBtnText = document.getElementById('clipboardBtnText');
+
+        let currentValidUrl = null;
+
+        // Core extraction logic covering all edge cases
+        function extractSensorTowerInfo(input) {
+            let cleanInput = input.trim();
+            if (!cleanInput) return null;
+
+            let id = null;
+            let os = null;
+
+            // --- 1. Check for iOS ---
+            const iosUrlMatch = cleanInput.match(/\/id(\d+)/i);
+            const iosIdMatch = cleanInput.match(/^id(\d+)$/i);
+            const iosNumMatch = cleanInput.match(/^(\d{5,15})$/);
+
+            if (iosUrlMatch) {
+                id = iosUrlMatch[1];
+                os = 'ios';
+            } else if (iosIdMatch) {
+                id = iosIdMatch[1];
+                os = 'ios';
+            } else if (iosNumMatch) {
+                id = iosNumMatch[1];
+                os = 'ios';
+            }
+
+            // --- 2. Check for Android ---
+            if (!id) {
+                const androidUrlMatch = cleanInput.match(/[?&]?id=([^&]+)/i);
+                const androidEqualsMatch = cleanInput.match(/^=([^&]+)/i);
+                const androidPackageMatch = cleanInput.match(/^([a-zA-Z0-9_-]+\.[a-zA-Z0-9_.-]+)$/i);
+
+                if (androidUrlMatch) {
+                    id = androidUrlMatch[1];
+                    os = 'android';
+                } else if (androidEqualsMatch) {
+                    id = androidEqualsMatch[1];
+                    os = 'android';
+                } else if (androidPackageMatch) {
+                    id = androidPackageMatch[1];
+                    os = 'android';
+                }
+            }
+
+            if (id && os) {
+                return {
+                    id: id,
+                    os: os,
+                    url: `https://app.sensortower.com/overview/${id}?os=${os}`
+                };
+            }
+            return null;
+        }
+
+        function handleInputUpdate(isPaste = false) {
+            const val = appInput.value;
+            
+            if (val.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+                resetUI();
+                return;
+            }
+
+            const info = extractSensorTowerInfo(val);
+
+            if (info) {
+                // Valid Input
+                currentValidUrl = info.url;
+                errorMessage.classList.add('hidden');
+                resultArea.classList.remove('hidden');
+                
+                extractedIdText.innerText = info.id;
+
+                if (info.os === 'ios') {
+                    platformIcon.className = 'fa-brands fa-apple text-gray-800 text-lg';
+                    platformText.innerText = 'App Store (iOS)';
+                } else {
+                    platformIcon.className = 'fa-brands fa-google-play text-emerald-500 text-sm';
+                    platformText.innerText = 'Google Play (Android)';
+                }
+
+                // Auto-redirect if enabled and action was a paste
+                if (isPaste && autoRedirect.checked) {
+                    executeRedirect();
+                }
+
+            } else {
+                // Invalid Input
+                currentValidUrl = null;
+                resultArea.classList.add('hidden');
+                
+                if (val.length > 3) {
+                    errorMessage.classList.remove('hidden');
+                } else {
+                    errorMessage.classList.add('hidden');
+                }
+            }
+        }
+
+        function resetUI() {
+            currentValidUrl = null;
+            resultArea.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+        }
+
+        function executeRedirect() {
+            if (currentValidUrl) {
+                const originalText = redirectBtn.innerHTML;
+                redirectBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Opening...</span>';
+                setTimeout(() => {
+                    window.open(currentValidUrl, '_blank');
+                    // Reset button text after a short delay in case user comes back
+                    setTimeout(() => redirectBtn.innerHTML = originalText, 1000);
+                }, 200);
+            }
+        }
+
+        // --- Clipboard Logic ---
+        clipboardBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text && text.trim() !== '') {
+                    appInput.value = text;
+                    handleInputUpdate(true); // Treat clipboard click as a paste
+                } else {
+                    showClipboardStatus('Clipboard is empty', true);
+                }
+            } catch (err) {
+                showClipboardStatus('Please paste manually', true);
+                appInput.focus();
+            }
+        });
+
+        function showClipboardStatus(msg, isError) {
+            const originalText = clipboardBtnText.innerText;
+            clipboardBtnText.innerText = msg;
+            if (isError) clipboardBtn.classList.replace('text-brand', 'text-red-500');
+            
+            setTimeout(() => {
+                clipboardBtnText.innerText = originalText;
+                if (isError) clipboardBtn.classList.replace('text-red-500', 'text-brand');
+            }, 2000);
+        }
+
+        // --- Event Listeners ---
+        appInput.addEventListener('input', () => handleInputUpdate(false));
+        
+        appInput.addEventListener('paste', () => {
+            setTimeout(() => {
+                handleInputUpdate(true);
+            }, 10);
+        });
+
+        appInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && currentValidUrl) {
+                executeRedirect();
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            appInput.value = '';
+            appInput.focus();
+            handleInputUpdate();
+        });
+
+        redirectBtn.addEventListener('click', executeRedirect);
+
+    </script>
+</body>
+</html>
