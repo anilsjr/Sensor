@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sensor Tower Redirector</title>
+
     <!-- Tailwind CSS for Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -19,22 +20,19 @@
                         sans: ['Inter', 'sans-serif'],
                     },
                     colors: {
-                        brand: '#2563eb', // Blue 600
-                        brandHover: '#1d4ed8', // Blue 700
+                        brand: '#2563eb',
+                        brandHover: '#1d4ed8',
                     }
                 }
             }
-        }
+        };
     </script>
     <style>
-        body {
-            background-color: #fafafa;
-        }
-        
+        body { background-color: #fafafa; }
+
         .fade-in {
             animation: fadeIn 0.2s ease-out forwards;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
@@ -43,8 +41,7 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 text-gray-800 font-sans">
 
-    <div class="max-w-md w-full bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 p-6 sm:p-8">
-        
+    <main class="max-w-md w-full bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 p-6 sm:p-8">
         <!-- Header -->
         <div class="mb-6 text-center">
             <h1 class="text-2xl font-bold text-gray-900 mb-1">Sensor Tower</h1>
@@ -53,51 +50,58 @@
 
         <!-- Main Content -->
         <div class="mb-2 relative">
-            <input 
-                type="text" 
-                id="appInput" 
-                placeholder="Paste App Link or ID here..." 
+            <input
+                type="text"
+                id="appInput"
+                placeholder="Paste App Link or ID here..."
+                aria-label="App Store or Google Play link or ID"
                 class="w-full pl-4 pr-10 py-3.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all text-gray-800 bg-gray-50 focus:bg-white text-sm"
                 autocomplete="off"
                 autofocus
             >
-            <button id="clearBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden transition-colors" title="Clear input">
-                <i class="fa-solid fa-circle-xmark text-lg"></i>
+            <button id="clearBtn" type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden transition-colors" title="Clear input" aria-label="Clear input">
+                <i class="fa-solid fa-circle-xmark text-lg" aria-hidden="true"></i>
             </button>
         </div>
 
-        <!-- Clipboard Button Option -->
-        <button id="clipboardBtn" class="mb-6 text-sm font-medium text-brand hover:text-brandHover flex items-center gap-1.5 transition-colors px-1">
-            <i class="fa-regular fa-clipboard"></i>
+        <!-- Clipboard Button -->
+        <button id="clipboardBtn" type="button" class="mb-6 text-sm font-medium text-brand hover:text-brandHover flex items-center gap-1.5 transition-colors px-1">
+            <i class="fa-regular fa-clipboard" aria-hidden="true"></i>
             <span id="clipboardBtnText">Paste from clipboard</span>
         </button>
 
         <!-- Validation Error Message -->
-        <div id="errorMessage" class="hidden mb-6 bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm flex items-start gap-2 border border-red-100 fade-in">
-            <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+        <div id="errorMessage" role="alert" class="hidden mb-6 bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm flex items-start gap-2 border border-red-100 fade-in">
+            <i class="fa-solid fa-circle-exclamation mt-0.5" aria-hidden="true"></i>
             <span>Invalid Android Package ID or iOS App ID.</span>
         </div>
 
         <!-- Result Area -->
         <div id="resultArea" class="hidden fade-in">
             <div class="bg-gray-50 rounded-xl p-3.5 mb-4 border border-gray-100 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-100">
-                        <i id="platformIcon" class="text-gray-700"></i>
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-100 shrink-0">
+                        <i id="platformIcon" class="text-gray-700" aria-hidden="true"></i>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <p id="platformText" class="text-sm font-semibold text-gray-800"></p>
                         <p id="extractedIdText" class="text-xs font-mono text-gray-500 mt-0.5 break-all"></p>
                     </div>
                 </div>
             </div>
 
-            <button id="redirectBtn" class="w-full bg-brand hover:bg-brandHover text-white font-semibold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+            <button id="redirectBtn" type="button" class="w-full bg-brand hover:bg-brandHover text-white font-semibold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
                 <span>Open in Sensor Tower</span>
-                <i class="fa-solid fa-arrow-right"></i>
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
             </button>
         </div>
-        
+
+        <!-- NEW: History page link -->
+        <a href="./history.html" class="mt-5 w-full flex items-center justify-center gap-2 rounded-xl border border-blue-100 bg-blue-50 hover:bg-blue-100 text-brand font-semibold text-sm py-3 transition-colors">
+            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+            View History
+        </a>
+
         <!-- Footer -->
         <div class="mt-6 pt-4 border-t border-gray-100 flex justify-center">
             <label class="flex items-center gap-2 text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">
@@ -105,35 +109,33 @@
                 <span>Auto-redirect on paste</span>
             </label>
         </div>
-    </div>
+    </main>
 
     <script>
-        // DOM Elements
+        const STORAGE_KEY = 'sensorTowerHistory';
+
         const appInput = document.getElementById('appInput');
         const clearBtn = document.getElementById('clearBtn');
         const resultArea = document.getElementById('resultArea');
         const errorMessage = document.getElementById('errorMessage');
         const redirectBtn = document.getElementById('redirectBtn');
-        
         const platformIcon = document.getElementById('platformIcon');
         const platformText = document.getElementById('platformText');
         const extractedIdText = document.getElementById('extractedIdText');
         const autoRedirect = document.getElementById('autoRedirect');
-        
         const clipboardBtn = document.getElementById('clipboardBtn');
         const clipboardBtnText = document.getElementById('clipboardBtnText');
 
         let currentValidUrl = null;
 
-        // Core extraction logic covering all edge cases
+        // Accept App Store URLs, iOS IDs, Play Store URLs, or Android package IDs.
         function extractSensorTowerInfo(input) {
-            let cleanInput = input.trim();
+            const cleanInput = input.trim();
             if (!cleanInput) return null;
 
             let id = null;
             let os = null;
 
-            // --- 1. Check for iOS ---
             const iosUrlMatch = cleanInput.match(/\/id(\d+)/i);
             const iosIdMatch = cleanInput.match(/^id(\d+)$/i);
             const iosNumMatch = cleanInput.match(/^(\d{5,15})$/);
@@ -149,7 +151,6 @@
                 os = 'ios';
             }
 
-            // --- 2. Check for Android ---
             if (!id) {
                 const androidUrlMatch = cleanInput.match(/[?&]?id=([^&]+)/i);
                 const androidEqualsMatch = cleanInput.match(/^=([^&]+)/i);
@@ -169,17 +170,37 @@
 
             if (id && os) {
                 return {
-                    id: id,
-                    os: os,
-                    url: `https://app.sensortower.com/overview/${id}?os=${os}`
+                    id,
+                    os,
+                    url: `https://app.sensortower.com/overview/${encodeURIComponent(id)}?os=${os}`
                 };
             }
             return null;
         }
 
+        // NEW: Save every redirect to the same localStorage key used by history.html.
+        function saveToHistory(info) {
+            try {
+                const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                const history = Array.isArray(stored) ? stored : [];
+
+                history.unshift({
+                    id: info.id,
+                    os: info.os,
+                    timestamp: Date.now()
+                });
+
+                // Keep the most recent 100 openings.
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, 100)));
+            } catch (error) {
+                // The redirect still works when storage is unavailable.
+                console.warn('Could not save Sensor Tower history:', error);
+            }
+        }
+
         function handleInputUpdate(isPaste = false) {
             const val = appInput.value;
-            
+
             if (val.length > 0) {
                 clearBtn.classList.remove('hidden');
             } else {
@@ -191,36 +212,26 @@
             const info = extractSensorTowerInfo(val);
 
             if (info) {
-                // Valid Input
                 currentValidUrl = info.url;
                 errorMessage.classList.add('hidden');
                 resultArea.classList.remove('hidden');
-                
-                extractedIdText.innerText = info.id;
+                extractedIdText.textContent = info.id;
 
                 if (info.os === 'ios') {
                     platformIcon.className = 'fa-brands fa-apple text-gray-800 text-lg';
-                    platformText.innerText = 'App Store (iOS)';
+                    platformText.textContent = 'App Store (iOS)';
                 } else {
                     platformIcon.className = 'fa-brands fa-google-play text-emerald-500 text-sm';
-                    platformText.innerText = 'Google Play (Android)';
+                    platformText.textContent = 'Google Play (Android)';
                 }
 
-                // Auto-redirect if enabled and action was a paste
                 if (isPaste && autoRedirect.checked) {
                     executeRedirect();
                 }
-
             } else {
-                // Invalid Input
                 currentValidUrl = null;
                 resultArea.classList.add('hidden');
-                
-                if (val.length > 3) {
-                    errorMessage.classList.remove('hidden');
-                } else {
-                    errorMessage.classList.add('hidden');
-                }
+                errorMessage.classList.toggle('hidden', val.length <= 3);
             }
         }
 
@@ -230,56 +241,51 @@
             errorMessage.classList.add('hidden');
         }
 
+        // UPDATED: Record the app before opening it. No delayed popup.
         function executeRedirect() {
-            if (currentValidUrl) {
-                const originalText = redirectBtn.innerHTML;
-                redirectBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Opening...</span>';
-                setTimeout(() => {
-                    window.open(currentValidUrl, '_blank');
-                    // Reset button text after a short delay in case user comes back
-                    setTimeout(() => redirectBtn.innerHTML = originalText, 1000);
-                }, 200);
-            }
+            if (!currentValidUrl) return;
+            const info = extractSensorTowerInfo(appInput.value);
+            if (!info) return;
+
+            saveToHistory(info);
+            window.open(info.url, '_blank', 'noopener,noreferrer');
         }
 
-        // --- Clipboard Logic ---
         clipboardBtn.addEventListener('click', async () => {
             try {
                 const text = await navigator.clipboard.readText();
                 if (text && text.trim() !== '') {
                     appInput.value = text;
-                    handleInputUpdate(true); // Treat clipboard click as a paste
+                    handleInputUpdate(true);
                 } else {
                     showClipboardStatus('Clipboard is empty', true);
                 }
-            } catch (err) {
+            } catch (error) {
                 showClipboardStatus('Please paste manually', true);
                 appInput.focus();
             }
         });
 
-        function showClipboardStatus(msg, isError) {
-            const originalText = clipboardBtnText.innerText;
-            clipboardBtnText.innerText = msg;
+        function showClipboardStatus(message, isError) {
+            const originalText = clipboardBtnText.textContent;
+            clipboardBtnText.textContent = message;
             if (isError) clipboardBtn.classList.replace('text-brand', 'text-red-500');
-            
+
             setTimeout(() => {
-                clipboardBtnText.innerText = originalText;
+                clipboardBtnText.textContent = originalText;
                 if (isError) clipboardBtn.classList.replace('text-red-500', 'text-brand');
             }, 2000);
         }
 
-        // --- Event Listeners ---
         appInput.addEventListener('input', () => handleInputUpdate(false));
-        
+
         appInput.addEventListener('paste', () => {
-            setTimeout(() => {
-                handleInputUpdate(true);
-            }, 10);
+            setTimeout(() => handleInputUpdate(true), 10);
         });
 
-        appInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && currentValidUrl) {
+        appInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && currentValidUrl) {
+                event.preventDefault();
                 executeRedirect();
             }
         });
@@ -291,7 +297,6 @@
         });
 
         redirectBtn.addEventListener('click', executeRedirect);
-
     </script>
 </body>
 </html>
